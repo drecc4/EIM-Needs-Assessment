@@ -1,19 +1,17 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-import plotly.figure_factory as ff
 import datetime as dt
 import sys
 import os
 
-from functions.plots import plot_programs_on_scatter_map
-from functions.tables import get_df_demand, get_df_supply, get_df_demand_detail, get_df_reference_disciplines, get_df_reference_geography, table_regional_demand, table_state_demand
+from functions.plots import plot_programs_on_scatter_map, plot_states_in_region
+from functions.tables import *
 
 #call data tables from tables.pt
 #!supply table further down in logic (dependent on user input)
 df_reference_geo = get_df_reference_geography()
+df_reference_cities = get_df_reference_city_list()
 df_reference_discipline = get_df_reference_disciplines()
 df_demand = get_df_demand()
 df_demand_detail = get_df_demand_detail()
@@ -35,25 +33,34 @@ def default_avg_grad_class_size(disciplineabbreviation):
 def get_state_list():
     return(list(df_reference_geo.State))
 
+def get_city_selection(selected_state):
+    df_temp = df_reference_cities.loc[df_reference_cities['State'] == program_campus_state].sort_values(by='City')
+    filtered_cities = list(df_temp.City)
+    return(filtered_cities)
+
 #-----------------------------------------------------------------------------------------------------------
 
 #Sidebar
-st.sidebar.header('User Inputs')
-st.sidebar.caption('Complete the form below to populate the needs assessment template')
+st.sidebar.title('EIM Needs Assessment Generator Tool')
 st.sidebar.markdown("""---""")
+
+#USer Inputs
+st.sidebar.write('**User Inputs**')
+st.sidebar.caption('Complete the form below to populate the needs assessment template')
 
 
 #User Selected Drivers
-discipline_abbreviation = st.sidebar.selectbox("What discipline?", ('DPT', 'OTD', 'PA', 'SLP', 'OD'))
+discipline_abbreviation = st.sidebar.selectbox("What discipline?", ('DPT', 'OTD', 'SLP', 'OD')) #leaving PA off for now, need to fix issue with scatter map plot
 university_program_full_name = st.sidebar.text_area("Who is the partner (full name)?", 'Roseman University of Health Sciences')
 program_campus_state = st.sidebar.selectbox("In what state will they launch?", (get_state_list()),43)
-program_campus_major_city = st.sidebar.text_input("In what major city?", "San Antonio")
+program_campus_major_city = st.sidebar.selectbox("In what major city?", get_city_selection(program_campus_state))
+#program_campus_major_city = st.sidebar.text_input("In what major city?", "San Antonio")
 st.sidebar.markdown("""---""")
 
 
 #Default Settings
-st.sidebar.header('Default Settings')
-st.sidebar.markdown("""""")
+st.sidebar.write('**Default Settings**')
+st.markdown(' ')
 
 avg_grad_class_size = st.sidebar.number_input(
     'Avg graduating class size', min_value=20, max_value=200, 
@@ -69,6 +76,8 @@ date_prepared = dt.date.today()
 
 #geography drivers
 program_campus_region = df_reference_geo.Region.loc[df_reference_geo['State'] == program_campus_state].max()
+program_campus_state_code = df_reference_geo['State Code'].loc[df_reference_geo['State'] == program_campus_state].max()
+
 
 #discipline drivers
 df_lookup_discipline = df_reference_discipline.loc[df_reference_discipline['Discipline'] == discipline_abbreviation]
@@ -98,9 +107,13 @@ pmp_fcast_total_jobs_base_year_region = df_demand_detail_region.BaseYearJobEst.s
 pmp_fcast_total_jobs_projected_year_region = df_demand_detail_region.ProjectedYearJobEst.sum()
 pmp_fcast_total_annual_openings_region = df_demand_detail_region.EstJobChange.sum()
 pmp_fcast_avg_annual_openings_region = df_demand_detail_region.AvgAnnualOpenings.sum()
-pmp_fcast_job_growth_pct_region = df_demand_detail_region.EstJobChangePct.sum()
+
+pmp_fcast_job_growth_pct_region = pmp_fcast_job_growth_pct_region = (df_demand_detail_region.EstJobChange.sum() / df_demand_detail_region.BaseYearJobEst.sum())
+pmp_fcast_job_growth_pct_region = (round(pmp_fcast_job_growth_pct_region,3)*100).astype(int)
+
 pmp_fcast_job_growth_pct_region_min = df_demand_detail_region.EstJobChangePct.min()
 pmp_fcast_job_growth_pct_region_max = df_demand_detail_region.EstJobChangePct.max()
+
 
 #profession within State (i.e. DPT in Texas)
 df_demand_detail_state = df_demand_detail_discipline.loc[df_demand_detail_discipline['State'] == program_campus_state]
@@ -121,9 +134,7 @@ bls_median_pay_current = '$91,010'
 #call supply tables from tables.pt
 df_supply = get_df_supply(discipline_accreditor)
 
-#Tables & Plots
-df_region_demand_current = table_regional_demand(df_supply, df_demand, professional_abbreviation, ['Accredited'], avg_grad_class_size)
-df_region_demand_outlook = table_regional_demand(df_supply, df_demand, professional_abbreviation, ['Accredited', 'Developing'], avg_grad_class_size)
+
 
 
 #-----------------------------------------------------------------------------------------------------------
@@ -131,8 +142,8 @@ df_region_demand_outlook = table_regional_demand(df_supply, df_demand, professio
 #Report
 
 #header
-st.header(university_program_full_name)
-st.subheader(f'**{professional_industry} Needs Assessment**')
+st.header(f'**{professional_industry} Needs Assessment**')
+st.subheader(f'{university_program_full_name}')
 st.write(f'prepared on: {date_prepared}')
 st.markdown("""---""")
 
@@ -142,8 +153,8 @@ st.write(
     f'''
     **{university_program_full_name}** is proposing to increase access to **{professional_education}** education on a 
     national scale by developing a hybrid {discipline_name_with_abbreviation} Program at its 
-    **{program_campus_state}** campus (**{program_campus_major_city}** area). **{program_campus_major_city}** is centrally located 
-    with an international airport and direct flight access from most cities around the country, making it an ideal location 
+    **{program_campus_state}** campus in the **{program_campus_major_city}** area. **{program_campus_major_city}** *is centrally located 
+    with an international airport and direct flight access from most cities around the country*, making it an ideal location 
     for a hybrid program that will recruit students from both a regional and a national applicant pool. A thorough study 
     of the national, regional, and local need for a **{discipline_abbreviation}** program as been performed.
 
@@ -151,15 +162,17 @@ st.write(
 
 st.markdown(' ')
 
+#--------------------------------------------------------------------------------------------------------------------
 
 #section 2
 st.subheader(f'**National Outlook**')
 
-#us map
-st.write(f"*Accredited and Developing {discipline_abbreviation} Programs by Region*")
+#Plot 1: US Scatter Map of All Program Locations
 summary_table_country = table_state_demand(df_supply, df_demand,professional_abbreviation, 'All', ['Accredited', 'Developing'], avg_grad_class_size)
 summary_plot_country = plot_programs_on_scatter_map(df_supply, summary_table_country, 'Outlook')
+st.caption(f"*Plot 1: Outlook of Accredited + Developing {discipline_abbreviation} Programs*")
 st.write(summary_plot_country)
+st.markdown(' ')
 
 st.write(
     f'''
@@ -174,9 +187,37 @@ st.write(
 
 st.markdown(' ')
 
+#Table 1: Regional Summary of Satisfied Demand
+
+def highlight_selected_region(s):
+    return ['background-color: #b5e6cf']*len(s) if s.Region == program_campus_region else ['background-color: white']*len(s)
+
+##regional table summary
+df_region_demand_current = table_regional_demand(df_supply, df_demand, professional_abbreviation, ['Accredited'], avg_grad_class_size)
+df_region_demand_outlook = table_regional_demand(df_supply, df_demand, professional_abbreviation, ['Accredited', 'Developing'], avg_grad_class_size)
+
+##split then combine
+df_region_demand_current = df_region_demand_current[['Region', 'AvgAnnualOpenings', 'Program', 'SatisfiedDemand%']]
+df_region_demand_current = df_region_demand_current.rename(columns={'Program': 'Programs(c)', 'SatisfiedDemand%':'Satisfied Demand(c)', 'AvgAnnualOpenings': 'Avg Annual New Jobs'})
+
+df_region_demand_outlook = df_region_demand_outlook[['Region', 'Program', 'SatisfiedDemand%']]
+df_region_demand_outlook = df_region_demand_outlook.rename(columns={'Program': 'Programs(o)', 'SatisfiedDemand%':'Satisfied Demand(o)'})
+
+##combine
+df_region_demand_combined = pd.merge(df_region_demand_current, df_region_demand_outlook, on='Region', how='left')
+df_region_demand_combined = df_region_demand_combined.sort_values(by='Satisfied Demand(o)', ascending=True).reset_index(drop=True)
+df_region_demand_combined['Rank'] = df_region_demand_combined.index+1
+df_region_demand_combined = df_region_demand_combined[['Rank', 'Region', 'Avg Annual New Jobs', 'Programs(c)', 'Programs(o)', 'Satisfied Demand(c)', 'Satisfied Demand(o)']]
+df_region_demand_combined.set_index('Rank', inplace=True)
+st.caption(f"*Table 1: Regional Ranking of Unmet Need for {discipline_abbreviation} Programs in the U.S.*")
+st.table(df_region_demand_combined.style.apply(highlight_selected_region, axis=1))
+st.markdown(' ')
+
+#--------------------------------------------------------------------------------------------------------------------
 
 #section 3
 st.subheader(f'**Regional & Local Outlook**')
+
 st.write(
     f'''
     Projections Central indicates that **{program_campus_state}** and other {program_campus_region}ern states 
@@ -193,10 +234,20 @@ st.write(
     with national trends (Table 1).
 
 ''')
-
 st.markdown(' ')
 
 
+#Plot 2: bar plot for selected region, by state
+df_state_demand_current = table_state_demand(df_supply, df_demand_detail_region, professional_abbreviation, program_campus_region, ['Accredited'], avg_grad_class_size)
+df_state_demand_outlook = table_state_demand(df_supply, df_demand_detail_region, professional_abbreviation, program_campus_region, ['Accredited', 'Developing'], avg_grad_class_size)
+
+summary_barplot_country = plot_states_in_region(df_state_demand_current, df_state_demand_outlook)
+st.caption(f"*Plot 2: Satisfied Demand for {discipline_abbreviation} Programs in the {program_campus_region}ern U.S.*")
+st.write(summary_barplot_country)
+st.markdown(' ')
+
+
+#--------------------------------------------------------------------------------------------------------------------
 
 #section 4
 st.subheader(f'**Educational Outlook**')
@@ -214,8 +265,33 @@ st.write(
 
 st.markdown(' ')
 
+def highlight_selected_state(s):
+    return ['background-color: #b5e6cf']*len(s) if s.StateCode == program_campus_state_code else ['background-color: white']*len(s)
 
+#Table 2: summart of states within selected region
+##split then combine
+df_state_demand_current_a = df_state_demand_current[['StateCode', 'AvgAnnualOpenings', 'Program', 'SatisfiedDemand']]
+df_state_demand_current_a = df_state_demand_current_a.rename(columns={'Program': 'Programs(c)', 'SatisfiedDemand':'Satisfied Demand(c)', 'AvgAnnualOpenings': 'Avg Annual New Jobs'})
 
+df_state_demand_outlook_b = df_state_demand_outlook[['StateCode', 'Program', 'SatisfiedDemand']]
+df_state_demand_outlook_b = df_state_demand_outlook_b.rename(columns={'Program': 'Programs(o)', 'SatisfiedDemand':'Satisfied Demand(o)'})
+
+##combine
+df_state_demand_combined = pd.merge(df_state_demand_current_a, df_state_demand_outlook_b, on='StateCode', how='left')
+df_state_demand_combined = df_state_demand_combined.sort_values(by='Satisfied Demand(o)', ascending=True).reset_index(drop=True)
+df_state_demand_combined['Rank'] = df_state_demand_combined.index+1
+df_state_demand_combined = df_state_demand_combined[['Rank', 'StateCode', 'Avg Annual New Jobs', 'Programs(c)', 'Programs(o)', 'Satisfied Demand(c)', 'Satisfied Demand(o)']]
+df_state_demand_combined.set_index('Rank', inplace=True)
+
+df_state_demand_combined['Satisfied Demand(c)'] = (round(df_state_demand_combined['Satisfied Demand(c)'],1)*100).astype(int)
+df_state_demand_combined['Satisfied Demand(o)'] = (round(df_state_demand_combined['Satisfied Demand(o)'],1)*100).astype(int)
+
+st.caption(f"*Table 2: State Ranking of Unmet Need for {discipline_abbreviation} Programs in the U.S.*")
+st.table(df_state_demand_combined.style.apply(highlight_selected_state, axis=1))
+#df_state_demand_combined.set_index('StateCode', inplace=True) --> fix later!
+st.markdown(' ')
+
+#--------------------------------------------------------------------------------------------------------------------
 
 #section 5
 st.subheader(f'**Population Demographics**')
@@ -236,6 +312,7 @@ st.write(
 
 st.markdown(' ')
 
+#--------------------------------------------------------------------------------------------------------------------
 
 #section 6
 st.subheader(f'**Healthcare Reform**')
@@ -255,6 +332,7 @@ st.write(
 
 st.markdown(' ')
 
+#--------------------------------------------------------------------------------------------------------------------
 
 #section 7
 st.subheader(f'**Hybrid Education Model**')
