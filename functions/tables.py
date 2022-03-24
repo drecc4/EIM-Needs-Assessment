@@ -13,6 +13,13 @@ def get_df_reference_geography():
     return(df_reference)
 
 #load reference file
+def get_df_reference_city_list():
+    file_path = f'./reference/'
+    file_name = 'USALargest200Cities.xlsx'
+    df_reference = pd.read_excel(f'{file_path}/{file_name}')
+    return(df_reference)
+
+#load reference file
 def get_df_reference_disciplines():
     file_path = f'./reference/'
     file_name = 'DisciplineLookupFieldsForApp.xlsx'

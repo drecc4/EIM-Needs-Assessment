@@ -4,6 +4,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.figure_factory as ff
 from urllib.request import urlopen
+import pandas as pd
 
 #---------------------------------------------------------------------------------------------------------------
 
@@ -27,7 +28,7 @@ plot_style = {
 
 #---------------------------------------------------------------------------------------------------------------
 
-#Scatter Map Plot (All Locations for Program, Colored by Status)
+#Plot #1: Scatter Map Plot (All Locations for Program, Colored by Status)
 def plot_programs_on_scatter_map(df_scatter, df_state_demand, scope):
 
     #step 1: split into two tables for easier control over styling
@@ -66,6 +67,7 @@ def plot_programs_on_scatter_map(df_scatter, df_state_demand, scope):
             lon = df_plot_a['Lng'],
             lat = df_plot_a['Lat'],
             text = df_plot_a['Program'],
+
             mode = 'markers',
             marker_color='#FDC3AB',
             marker_line_color='black',
@@ -108,5 +110,83 @@ def plot_programs_on_scatter_map(df_scatter, df_state_demand, scope):
     
     #update plot layout
     fig.update_layout(plot_style)
+
+    return(fig)
+
+#Plot #2: Bar Chart of Satisfied Demand by State
+def plot_states_in_region(df_current, df_outlook):
+    
+    #step 1: prepare table with change metric
+    
+    df_plot = pd.merge(df_current, df_outlook[['StateCode', 'SatisfiedDemand']], 
+                       on='StateCode', how='left', suffixes=('_Accredited', '_Outlook'))
+
+    df_plot['SatisfiedDemand_Chg'] = df_plot['SatisfiedDemand_Outlook'] - df_plot['SatisfiedDemand_Accredited']
+    df_plot = df_plot.sort_values(by='SatisfiedDemand_Outlook', ascending=False)
+
+    discipline = df_plot.Discipline.max()
+    region = df_plot.Region.max()
+
+    #------------------------------------------------------------------------------------------------
+
+    #step 2: create chart
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        x=df_plot['StateCode'],
+        y=df_plot['SatisfiedDemand_Accredited'],
+        #text=round(df_plot['SatisfiedDemand_Accredited'],2),
+        #texttemplate='%{text:.0%}',
+        name='Current',
+        #textposition='outside',
+        marker_color='rgba(18, 63, 90, 1.0)',
+        marker_line_color='rgba(18, 63, 90, 1.0)',
+        marker_line_width=2
+    ))
+
+    fig.add_trace(go.Bar(
+        x=df_plot['StateCode'],
+        y=df_plot['SatisfiedDemand_Chg'],
+        text=round(df_plot['SatisfiedDemand_Chg'],2),
+        texttemplate='+%{text:.0%}',
+        name='Outlook',
+        textposition='outside',
+        marker_color='rgba(107, 207, 161, 0.8)',
+        marker_line_color='rgba(107, 207, 161, 1.0)',
+        marker_line_width=2
+    ))
+
+
+    fig.add_hline(y=1.0, line_width=2.0, line_dash="dash", line_color="#171717", annotation_font_size=13,
+                  annotation_text='100% of Demand Satisfied')
+    
+    fig.update_traces(textfont_size=12)
+    fig.update_yaxes(range=[0, 2.05])
+
+    #update plot layout
+    fig.update_layout(
+        yaxis_tickformat = '0.0%',
+        bargap=0.15,
+        font_size=13,
+        barmode='stack',
+        xaxis_tickangle=0,
+        margin=dict(l=80, r=60, b=90, t=40, pad=1),
+        paper_bgcolor='rgb(250,250,250)',
+        plot_bgcolor='rgb(250,250,250)',
+        geo_bgcolor='rgb(250,250,250)',
+        title_font_size = 26,
+        title_xanchor = 'center',
+        font_family = 'Arial',
+        font_color = 'black',
+        legend=dict(
+            font_size=12,
+            orientation="h",
+            yanchor="bottom",
+            y=-0.19,
+            xanchor="right",
+            x=0.65)
+    )
+
 
     return(fig)
