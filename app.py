@@ -49,10 +49,10 @@ st.sidebar.caption('Complete the form below to populate the needs assessment tem
 
 
 #User Selected Drivers
-discipline_abbreviation = st.sidebar.selectbox("What discipline?", ('DPT', 'OTD', 'SLP', 'OD')) #leaving PA off for now, need to fix issue with scatter map plot
-university_program_full_name = st.sidebar.text_area("Who is the partner (full name)?", 'Roseman University of Health Sciences')
-program_campus_state = st.sidebar.selectbox("In what state will they launch?", (get_state_list()),43)
-program_campus_major_city = st.sidebar.selectbox("In what major city?", get_city_selection(program_campus_state))
+discipline_abbreviation = st.sidebar.selectbox("Discipline", ('DPT', 'OTD', 'SLP', 'OD')) #leaving PA off for now, need to fix issue with scatter map plot
+university_program_full_name = st.sidebar.text_area("Name of Partner", 'Roseman University of Health Sciences')
+program_campus_state = st.sidebar.selectbox("Program launch state", (get_state_list()),43)
+program_campus_major_city = st.sidebar.selectbox("Closest major city", get_city_selection(program_campus_state))
 #program_campus_major_city = st.sidebar.text_input("In what major city?", "San Antonio")
 st.sidebar.markdown("""---""")
 
