@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime as dt
-import sys
 import os
 
 from functions.plots import plot_programs_on_scatter_map, plot_states_in_region
@@ -283,8 +282,8 @@ df_state_demand_combined['Rank'] = df_state_demand_combined.index+1
 df_state_demand_combined = df_state_demand_combined[['Rank', 'StateCode', 'Avg Annual New Jobs', 'Programs(c)', 'Programs(o)', 'Satisfied Demand(c)', 'Satisfied Demand(o)']]
 df_state_demand_combined.set_index('Rank', inplace=True)
 
-df_state_demand_combined['Satisfied Demand(c)'] = (round(df_state_demand_combined['Satisfied Demand(c)'],1)*100).astype(int)
-df_state_demand_combined['Satisfied Demand(o)'] = (round(df_state_demand_combined['Satisfied Demand(o)'],1)*100).astype(int)
+df_state_demand_combined['Satisfied Demand(c)'] = (round(df_state_demand_combined['Satisfied Demand(c)'],3)*100).astype(int)
+df_state_demand_combined['Satisfied Demand(o)'] = (round(df_state_demand_combined['Satisfied Demand(o)'],3)*100).astype(int)
 
 st.caption(f"*Table 2: State Ranking of Unmet Need for {discipline_abbreviation} Programs in the U.S.*")
 st.table(df_state_demand_combined.style.apply(highlight_selected_state, axis=1))
