@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-db = '../../03 - Database/'
+db = '../data/'
 
 
 #----------------------------------------------------------------------------------------------------
@@ -24,7 +24,7 @@ def get_df_reference_disciplines():
 
 #load df_supply
 def get_df_supply(accreditor):
-    file_path = f'{db}/02-Staging/ProgramDirectoryNormalizedAndFiltered'
+    file_path = f'./data/ProgramDirectoryNormalizedAndFiltered'
     last_updated_file = os.listdir(file_path)[-1][0:7]
     file_name = f'{last_updated_file} - {accreditor} Normalized Program Directory.xlsx'
     df_supply = pd.read_excel(f'{file_path}/{file_name}')
@@ -33,7 +33,7 @@ def get_df_supply(accreditor):
 
 #load df_demand
 def get_df_demand():
-    file_path = f'{db}/02-Staging/MarketDemand'
+    file_path = f'./data/MarketDemand'
     last_updated_file = os.listdir(file_path)[-1]
     df_demand = pd.read_excel(f'{file_path}/{last_updated_file}')
     return(df_demand)
@@ -41,7 +41,7 @@ def get_df_demand():
 
 #load df_demand_detail
 def get_df_demand_detail():
-    file_path = f'{db}/02-Staging/PMPCombinedFcastDetail'
+    file_path = f'./data/PMPCombinedFcastDetail'
     last_updated_file = os.listdir(file_path)[-1]
     df_demand = pd.read_excel(f'{file_path}/{last_updated_file}')
     return(df_demand)
