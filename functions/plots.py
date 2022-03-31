@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import plotly.figure_factory as ff
 from urllib.request import urlopen
 import pandas as pd
+import streamlit as st
 
 #---------------------------------------------------------------------------------------------------------------
 
@@ -29,6 +30,7 @@ plot_style = {
 #---------------------------------------------------------------------------------------------------------------
 
 #Plot #1: Scatter Map Plot (All Locations for Program, Colored by Status)
+@st.cache
 def plot_programs_on_scatter_map(df_scatter, df_state_demand, scope):
 
     #step 1: split into two tables for easier control over styling
@@ -67,7 +69,7 @@ def plot_programs_on_scatter_map(df_scatter, df_state_demand, scope):
             lon = df_plot_a['Lng'],
             lat = df_plot_a['Lat'],
             text = df_plot_a['Program'],
-
+            name = 'Current (c)',
             mode = 'markers',
             marker_color='#FDC3AB',
             marker_line_color='black',
@@ -80,6 +82,7 @@ def plot_programs_on_scatter_map(df_scatter, df_state_demand, scope):
             lon = df_plot_b['Lng'],
             lat = df_plot_b['Lat'],
             text = df_plot_b['Program'],
+            name = 'Outlook (o)',
             mode = 'markers',
             marker_color='#e86733',
             marker_line_color='black',
@@ -110,10 +113,22 @@ def plot_programs_on_scatter_map(df_scatter, df_state_demand, scope):
     
     #update plot layout
     fig.update_layout(plot_style)
+    fig.update_layout(
+        height=525,
+        showlegend=True,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.05,
+            xanchor="center",
+            x=0.5
+        )
+    )
 
     return(fig)
 
 #Plot #2: Bar Chart of Satisfied Demand by State
+@st.cache
 def plot_states_in_region(df_current, df_outlook):
     
     #step 1: prepare table with change metric
@@ -138,7 +153,7 @@ def plot_states_in_region(df_current, df_outlook):
         y=df_plot['SatisfiedDemand_Accredited'],
         #text=round(df_plot['SatisfiedDemand_Accredited'],2),
         #texttemplate='%{text:.0%}',
-        name='Current',
+        name='Current (c)',
         #textposition='outside',
         marker_color='rgba(18, 63, 90, 1.0)',
         marker_line_color='rgba(18, 63, 90, 1.0)',
@@ -150,7 +165,7 @@ def plot_states_in_region(df_current, df_outlook):
         y=df_plot['SatisfiedDemand_Chg'],
         text=round(df_plot['SatisfiedDemand_Chg'],2),
         texttemplate='+%{text:.0%}',
-        name='Outlook',
+        name='Outlook (o)',
         textposition='outside',
         marker_color='rgba(107, 207, 161, 0.8)',
         marker_line_color='rgba(107, 207, 161, 1.0)',
@@ -168,7 +183,7 @@ def plot_states_in_region(df_current, df_outlook):
     fig.update_layout(
         yaxis_tickformat = '0.0%',
         bargap=0.15,
-        font_size=13,
+        font_size=12,
         barmode='stack',
         xaxis_tickangle=0,
         margin=dict(l=80, r=60, b=90, t=40, pad=1),

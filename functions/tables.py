@@ -1,11 +1,13 @@
 import pandas as pd
 import os
+import streamlit as st
 
 #----------------------------------------------------------------------------------------------------
 
 #Functions
 
 #load reference file
+@st.cache
 def get_df_reference_geography():
     file_path = f'./reference/'
     file_name = 'GeographyReference.xlsx'
@@ -13,6 +15,7 @@ def get_df_reference_geography():
     return(df_reference)
 
 #load reference file
+@st.cache
 def get_df_reference_city_list():
     file_path = f'./reference/'
     file_name = 'USALargest200Cities.xlsx'
@@ -20,6 +23,7 @@ def get_df_reference_city_list():
     return(df_reference)
 
 #load reference file
+@st.cache
 def get_df_reference_disciplines():
     file_path = f'./reference/'
     file_name = 'DisciplineLookupFieldsForApp.xlsx'
@@ -27,6 +31,7 @@ def get_df_reference_disciplines():
     return(df_reference)
 
 #load df_supply
+@st.cache
 def get_df_supply(accreditor):
     file_path = f'./data/ProgramDirectoryNormalizedAndFiltered'
     last_updated_file = os.listdir(file_path)[-1][0:7]
@@ -36,6 +41,7 @@ def get_df_supply(accreditor):
 
 
 #load df_demand
+@st.cache
 def get_df_demand():
     file_path = f'./data/MarketDemand'
     last_updated_file = os.listdir(file_path)[-1]
@@ -44,12 +50,12 @@ def get_df_demand():
 
 
 #load df_demand_detail
+@st.cache
 def get_df_demand_detail():
     file_path = f'./data/PMPCombinedFcastDetail'
     last_updated_file = os.listdir(file_path)[-1]
     df_demand = pd.read_excel(f'{file_path}/{last_updated_file}')
     return(df_demand)
-
 
 
 def table_regional_demand(df_supply, df_demand, discipline, status_list, avg_grad_class_size):
@@ -74,8 +80,8 @@ def table_regional_demand(df_supply, df_demand, discipline, status_list, avg_gra
 
     #clean up
     df_final['Graduates'] = df_final['Graduates'].astype(int)
-    df_final['SatisfiedDemand%'] = (round(df_final['SatisfiedDemand%'],3)*100).astype(int)
-    
+    df_final['SatisfiedDemand%'] = (round(df_final['SatisfiedDemand%'],3)*100)
+        
     return(df_final)
 
 
@@ -121,3 +127,15 @@ def table_state_demand(df_supply, df_demand, discipline, region, status_list, av
     df_final = df_final.sort_values(by='SatisfiedDemand', ascending=False)
     
     return(df_final)
+
+
+
+#load CAPTE Annual Report
+@st.cache
+def get_accreditor_annual_report_data(discipline_accreditor):
+    file_path = f'./data/ProgramAnnualReportData'
+    file_name = f'{discipline_accreditor}_Annual_Report_Data.xlsx'
+    df_raw = pd.read_excel(f'{file_path}/{file_name}')
+    df_raw = df_raw[['NormalizedLabel', 2020]]
+    df_raw.columns = ['NormalizedLabel', 'Value']
+    return(df_raw)
