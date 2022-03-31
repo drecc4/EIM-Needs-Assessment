@@ -132,10 +132,11 @@ def table_state_demand(df_supply, df_demand, discipline, region, status_list, av
 
 #load CAPTE Annual Report
 @st.cache
-def get_accreditor_annual_report_data(discipline_accreditor):
+def get_accreditor_annual_report_data(discipline_abbreviation):
     file_path = f'./data/ProgramAnnualReportData'
-    file_name = f'{discipline_accreditor}_Annual_Report_Data.xlsx'
+    file_name = f'Annual_Report_Data.xlsx'
     df_raw = pd.read_excel(f'{file_path}/{file_name}')
-    df_raw = df_raw[['NormalizedLabel', 2020]]
-    df_raw.columns = ['NormalizedLabel', 'Value']
-    return(df_raw)
+    df_filtered = df_raw.loc[df_raw['Discipline'] == discipline_abbreviation]
+    source_year = df_filtered.Year.max()
+    df_filtered = df_filtered.loc[df_filtered['Year'] == source_year]
+    return(df_filtered)

@@ -114,12 +114,12 @@ def plot_programs_on_scatter_map(df_scatter, df_state_demand, scope):
     #update plot layout
     fig.update_layout(plot_style)
     fig.update_layout(
-        height=525,
+        height=470,
         showlegend=True,
         legend=dict(
             orientation="h",
             yanchor="bottom",
-            y=-0.05,
+            y=-0.08,
             xanchor="center",
             x=0.5
         )
@@ -186,7 +186,7 @@ def plot_states_in_region(df_current, df_outlook):
         font_size=12,
         barmode='stack',
         xaxis_tickangle=0,
-        margin=dict(l=80, r=60, b=90, t=40, pad=1),
+        margin=dict(l=80, r=60, b=90, t=60, pad=1),
         paper_bgcolor='rgb(250,250,250)',
         plot_bgcolor='rgb(250,250,250)',
         geo_bgcolor='rgb(250,250,250)',
@@ -194,6 +194,7 @@ def plot_states_in_region(df_current, df_outlook):
         title_xanchor = 'center',
         font_family = 'Arial',
         font_color = 'black',
+        height=470,
         legend=dict(
             font_size=12,
             orientation="h",

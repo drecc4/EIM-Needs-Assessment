@@ -4,8 +4,8 @@ import numpy
 
 #Section 1: Header
 def show_section_one(professional_industry, professional_abbreviation, university_program_full_name, date_prepared):
-    section_title = st.header(f'**{professional_industry} ({professional_abbreviation}) Needs Assessment**')
-    section_subtitle = st.subheader(f'{university_program_full_name}')
+    section_title = st.header(f'{professional_industry} ({professional_abbreviation}) Needs Assessment')
+    section_subtitle = st.subheader(f'**{university_program_full_name}**')
     section_date = st.write(f'prepared on: {date_prepared}')
     return(section_title, section_subtitle, section_date)
 
@@ -17,12 +17,12 @@ discipline_name_with_abbreviation, program_campus_state, program_campus_major_ci
     
     section_body = st.write(
         f'''
-        **{university_program_full_name}** is proposing to increase access to **{professional_education}** education on a 
+        {university_program_full_name} is proposing to increase access to {professional_education} education on a 
         national scale by developing a hybrid {discipline_name_with_abbreviation} Program at its 
-        **{program_campus_state}** campus in the **{program_campus_major_city}** area. **{program_campus_major_city}** *is centrally located 
+        {program_campus_state} campus in the {program_campus_major_city} area. {program_campus_major_city} *is centrally located 
         with an international airport and direct flight access from most cities around the country*, making it an ideal location 
         for a hybrid program that will recruit students from both a regional and a national applicant pool. A thorough study 
-        of the national, regional, and local need for a **{discipline_abbreviation}** program as been performed.
+        of the national, regional, and local need for a {discipline_abbreviation} program as been performed.
         ''')
 
     return(section_title, section_body)
@@ -41,14 +41,17 @@ pmp_fcast_job_growth_pct_discipline, pmp_fcast_year_start, pmp_fcast_year_end, p
 
     #string formatting for dollars and thousands separator
     pmp_fcast_avg_annual_openings_discipline_str = "{:,}".format(pmp_fcast_avg_annual_openings_discipline)
+    bls_median_pay_current_str = "${:,}".format(bls_median_pay_current)
+    bls_supply_current_str = "{:,}".format(bls_supply_current)
+    pmp_fcast_job_growth_pct_discipline_str = "{:.1%}".format(pmp_fcast_job_growth_pct_discipline)
     
     section_body = st.write(
         f'''
-        According to the Bureau of Labor Statistics, there were **{bls_supply_current}** **{professional_title}s** in the U.S.,
-        with a median pay of **{bls_median_pay_current}**. Employment of **{professional_abbreviation}s** is projected to grow
-        **{pmp_fcast_job_growth_pct_discipline}%** from **{pmp_fcast_year_start}** to **{pmp_fcast_year_end}** with 
-        **{pmp_fcast_avg_annual_openings_discipline_str}** new job openings each year on average. This reflects a much faster growth rate
-        than other occupations and places the **{professional_abbreviation}** profession as one of the fastest growing occupations
+        According to the Bureau of Labor Statistics, there were {bls_supply_current_str} {professional_title}s in the U.S.,
+        with a median pay of {bls_median_pay_current_str}. Employment of {professional_abbreviation}s is projected to grow
+        {pmp_fcast_job_growth_pct_discipline_str} from {pmp_fcast_year_start} to {pmp_fcast_year_end} with 
+        {pmp_fcast_avg_annual_openings_discipline_str} new job openings each year on average. This reflects a much faster growth rate
+        than other occupations and places the {professional_abbreviation} profession as one of the fastest growing occupations
         in the nation.
         ''')
 
@@ -76,47 +79,47 @@ pmp_fcast_job_growth_pct_state):
 
     #conditional statements
     section_body_exceeds = (f'''
-        Projections Central indicates that **{program_campus_state}** and other **{program_campus_region}ern** states 
-        are projected to experience a **{pmp_fcast_job_growth_pct_region_str}**  increase in growth from **{pmp_fcast_year_start}** 
-        to **{pmp_fcast_year_end}** (between **{pmp_fcast_job_growth_pct_region_min}%** to **{pmp_fcast_job_growth_pct_region_max}%**), 
-        which significantly exceeds the national growth rate of **{pmp_fcast_job_growth_pct_discipline_str}**. Employment prospects 
-        for **{program_campus_state}** are highly favorable, therefore the need for **{professional_abbreviation}s** will remain 
+        Projections Central indicates that {program_campus_state} and other {program_campus_region}ern states 
+        are projected to experience a {pmp_fcast_job_growth_pct_region_str}  increase in growth from {pmp_fcast_year_start} 
+        to {pmp_fcast_year_end} (between {pmp_fcast_job_growth_pct_region_min}% to {pmp_fcast_job_growth_pct_region_max}%), 
+        which significantly exceeds the national growth rate of {pmp_fcast_job_growth_pct_discipline_str}. Employment prospects 
+        for {program_campus_state} are highly favorable, therefore the need for {professional_abbreviation}s will remain 
         high for the next 10 years.
 
-        For example, **{program_campus_state}** had **{pmp_fcast_total_jobs_base_year_state_str}** licensed **{professional_title}s** 
-        in **{pmp_fcast_year_start}** and is projecting a need for **{pmp_fcast_total_jobs_projected_year_state_str}** therapists 
-        by the year **{pmp_fcast_year_end}** representing a **{pmp_fcast_job_growth_pct_state}%** increase, which is significantly 
-        higher than the national average. **{professional_abbreviation}** salaries for the region are in-line 
+        For example, {program_campus_state} had {pmp_fcast_total_jobs_base_year_state_str} licensed {professional_title}s 
+        in {pmp_fcast_year_start} and is projecting a need for {pmp_fcast_total_jobs_projected_year_state_str} therapists 
+        by the year {pmp_fcast_year_end} representing a {pmp_fcast_job_growth_pct_state}% increase, which is significantly 
+        higher than the national average. {professional_abbreviation} salaries for the region are in-line 
         with national trends (Table 1).
         ''')
 
     section_body_equal = (f'''
-        Projections Central indicates that **{program_campus_state}** and other **{program_campus_region}ern** states 
-        are projected to experience a **{pmp_fcast_job_growth_pct_region_str}**  increase in growth from **{pmp_fcast_year_start}** 
-        to **{pmp_fcast_year_end}** (between **{pmp_fcast_job_growth_pct_region_min}%** to **{pmp_fcast_job_growth_pct_region_max}%**), 
-        which aligns with the national growth rate of **{pmp_fcast_job_growth_pct_discipline_str}**. Employment prospects 
-        for **{program_campus_state}** are highly favorable, therefore the need for **{professional_abbreviation}s** will remain 
+        Projections Central indicates that {program_campus_state} and other {program_campus_region}ern states 
+        are projected to experience a {pmp_fcast_job_growth_pct_region_str}  increase in growth from {pmp_fcast_year_start} 
+        to {pmp_fcast_year_end} (between {pmp_fcast_job_growth_pct_region_min}% to {pmp_fcast_job_growth_pct_region_max}%), 
+        which aligns with the national growth rate of {pmp_fcast_job_growth_pct_discipline_str}. Employment prospects 
+        for {program_campus_state} are highly favorable, therefore the need for {professional_abbreviation}s will remain 
         high for the next 10 years.
 
-        For example, **{program_campus_state}** had **{pmp_fcast_total_jobs_base_year_state_str}** licensed **{professional_title}s** 
-        in **{pmp_fcast_year_start}** and is projecting a need for **{pmp_fcast_total_jobs_projected_year_state_str}** therapists 
-        by the year **{pmp_fcast_year_end}** representing a **{pmp_fcast_job_growth_pct_state}%** increase, which is significantly 
-        higher than the national average. **{professional_abbreviation}** salaries for the region are in-line 
+        For example, {program_campus_state} had {pmp_fcast_total_jobs_base_year_state_str} licensed {professional_title}s 
+        in {pmp_fcast_year_start} and is projecting a need for {pmp_fcast_total_jobs_projected_year_state_str} therapists 
+        by the year {pmp_fcast_year_end} representing a {pmp_fcast_job_growth_pct_state}% increase, which is significantly 
+        higher than the national average. {professional_abbreviation} salaries for the region are in-line 
         with national trends (Table 1).
         ''')
 
     section_body_under = (f'''
-        Projections Central indicates that **{program_campus_state}** and other **{program_campus_region}ern** states 
-        are projected to experience a **{pmp_fcast_job_growth_pct_region_str}**  increase in growth from **{pmp_fcast_year_start}** 
-        to **{pmp_fcast_year_end}** (between **{pmp_fcast_job_growth_pct_region_min}%** to **{pmp_fcast_job_growth_pct_region_max}%**),
-        while the national growth rate is projected to experience **{pmp_fcast_job_growth_pct_discipline_str}** growth. Employment prospects 
-        for **{program_campus_state}** are highly favorable, therefore the need for **{professional_abbreviation}s** will remain 
+        Projections Central indicates that {program_campus_state} and other {program_campus_region}ern states 
+        are projected to experience a {pmp_fcast_job_growth_pct_region_str}  increase in growth from {pmp_fcast_year_start} 
+        to {pmp_fcast_year_end} (between {pmp_fcast_job_growth_pct_region_min}% to {pmp_fcast_job_growth_pct_region_max}%),
+        while the national growth rate is projected to experience {pmp_fcast_job_growth_pct_discipline_str} growth. Employment prospects 
+        for {program_campus_state} are highly favorable, therefore the need for {professional_abbreviation}s will remain 
         high for the next 10 years.
 
-        For example, **{program_campus_state}** had **{pmp_fcast_total_jobs_base_year_state_str}** licensed **{professional_title}s** 
-        in **{pmp_fcast_year_start}** and is projecting a need for **{pmp_fcast_total_jobs_projected_year_state_str}** therapists 
-        by the year **{pmp_fcast_year_end}** representing a **{pmp_fcast_job_growth_pct_state}%** increase, which is significantly 
-        higher than the national average. **{professional_abbreviation}** salaries for the region are in-line 
+        For example, {program_campus_state} had {pmp_fcast_total_jobs_base_year_state_str} licensed {professional_title}s 
+        in {pmp_fcast_year_start} and is projecting a need for {pmp_fcast_total_jobs_projected_year_state_str} therapists 
+        by the year {pmp_fcast_year_end} representing a {pmp_fcast_job_growth_pct_state}% increase, which is significantly 
+        higher than the national average. {professional_abbreviation} salaries for the region are in-line 
         with national trends (Table 1).
         ''')
 
@@ -142,25 +145,35 @@ def show_section_five_header():
 
 #body
 def show_section_five_body(discipline_abbreviation, annual_report_total_applicants, annual_report_total_applicants_qualified, 
-annual_report_avg_annual_admitted_students, discipline_accreditor, discipline_total_accredited_programs_current, annual_report_total_annual_new_grads,
-program_campus_region, pmp_fcast_avg_annual_openings_region):
+annual_report_avg_annual_admitted_students, discipline_accreditor, regional_total_accredited_programs_current, regional_total_annual_new_grads,
+program_campus_region, regional_avg_new_jobs, regional_satisfied_demand_current):
 
     #string formatting for dollars and thousands separator
-    pmp_fcast_avg_annual_openings_region_str = "{:,}".format(pmp_fcast_avg_annual_openings_region)
+    regional_avg_new_jobs_str = "{:,}".format(regional_avg_new_jobs)
+    annual_report_total_applicants_str = "{:,}".format(annual_report_total_applicants)
+    annual_report_total_applicants_qualified_str = "{:,}".format(annual_report_total_applicants_qualified)
+    regional_total_annual_new_grads_str = "{:,}".format(regional_total_annual_new_grads)
+    regional_total_accredited_programs_current_str = "{:,}".format(regional_total_accredited_programs_current)
     
     section_body = st.write(
         f'''
-        Despite the expansion in the number of **{discipline_abbreviation}** programs nationally, programs have been unable to keep pace with employment 
-        demand and student interest with {annual_report_total_applicants} ({annual_report_total_applicants_qualified} qualified applicants) applicants vying 
-        for {annual_report_avg_annual_admitted_students} placements in the average **{discipline_abbreviation}** program. **{discipline_accreditor}'s** website 
-        shows there are currently {discipline_total_accredited_programs_current} accredited **{discipline_abbreviation}** programs in the region. As shown in **Table 2**, 
-        there are currently only {annual_report_total_annual_new_grads} seats available for DPT students in the {program_campus_region}ern U.S., when there is a projected 
-        need of **{pmp_fcast_avg_annual_openings_region_str}** professionals in this region annually. **(Table 2)**. Therefore, less than **regionally satisfied demand** 
-        of the projected employment demand is being satisfied by the current level of **{discipline_abbreviation}** program capacity.
+        Despite the expansion in the number of {discipline_abbreviation} programs nationally, programs have been unable to keep pace with employment 
+        demand and student interest with {annual_report_total_applicants_str} ({annual_report_total_applicants_qualified_str} qualified applicants) applicants vying 
+        for {annual_report_avg_annual_admitted_students} placements in the average {discipline_abbreviation} program. {discipline_accreditor}'s website 
+        shows there are currently {regional_total_accredited_programs_current_str} accredited {discipline_abbreviation} programs in the region. As shown in Table 2, 
+        there are currently only {regional_total_annual_new_grads_str} seats available for DPT students in the {program_campus_region}ern U.S., when there is a projected 
+        need of {regional_avg_new_jobs_str} professionals in this region annually. (Table 2). Therefore, less than {regional_satisfied_demand_current} regionally satisfied demand 
+        of the projected employment demand is being satisfied by the current level of {discipline_abbreviation} program capacity.
         '''
         )
 
     return(section_body)
+
+# df_region_demand_selected = df_region_demand_combined.loc[df_region_demand_combined['Region'] == program_campus_region]
+# regional_avg_new_jobs = df_region_demand_selected['Avg Annual New Jobs']
+# regional_total_accredited_programs_outlook = df_region_demand_selected['Programs (o)']
+# regional_satisfied_demand_current = df_region_demand_selected['Satisfied Demand (c)']
+# regional_satisfied_demand_outlook = df_region_demand_selected['Satisfied Demand (o)']
 
 
 
