@@ -5,3 +5,4 @@ xlrd==1.2.0
 python-dotenv==0.19.2
 urllib3==1.25.11
 json5==0.9.5
+fpdf==1.7.2
