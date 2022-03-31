@@ -1,3 +1,4 @@
+from hashlib import new
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -18,7 +19,7 @@ df_reference_discipline = get_df_reference_disciplines()
 df_demand = get_df_demand()
 df_demand_detail = get_df_demand_detail()
 
-#-----------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------
 
 #lookup
 lookup_avg_graduating_class_size = {
@@ -40,7 +41,7 @@ def get_city_selection(selected_state):
     filtered_cities = list(df_temp.City)
     return(filtered_cities)
 
-#-----------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------
 
 #Sidebar
 
@@ -72,7 +73,7 @@ avg_grad_class_size = st.sidebar.number_input(
     value=default_avg_grad_class_size(discipline_abbreviation), step=2
 )
 
-#-----------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------
 
 #Smarter Drivers
 
@@ -91,11 +92,15 @@ professional_title = df_lookup_discipline.Title.max()
 professional_education = df_lookup_discipline.Education.max()
 discipline_name_with_abbreviation = df_lookup_discipline.FullNameWithAbbreviation.max()
 discipline_accreditor = df_lookup_discipline.Accreditor.max()
+bls_supply_current = df_lookup_discipline.BLSTotalSupply2020.max()
+bls_median_pay_current = df_lookup_discipline.BLSMedianPay2020.max()
+bls_median_job_growth_10yr_fcast = df_lookup_discipline.BLS10YrJobOutlook2020.max()
 
 #demand drivers
 df_demand_detail_period = df_demand_detail.loc[df_demand_detail['Forecast'] == 'LT']
 pmp_fcast_year_start = df_demand_detail_period.BaseYear.max()
 pmp_fcast_year_end = df_demand_detail_period.ProjectedYear.max()
+
 
 #entire country (i.e. DPT in USA)
 df_demand_detail_discipline = df_demand_detail_period.loc[df_demand_detail_period['Discipline'] == professional_abbreviation]
@@ -114,10 +119,8 @@ pmp_fcast_total_jobs_base_year_region = df_demand_detail_region.BaseYearJobEst.s
 pmp_fcast_total_jobs_projected_year_region = df_demand_detail_region.ProjectedYearJobEst.sum()
 pmp_fcast_total_annual_openings_region = df_demand_detail_region.EstJobChange.sum()
 pmp_fcast_avg_annual_openings_region = df_demand_detail_region.AvgAnnualOpenings.sum()
-
 pmp_fcast_job_growth_pct_region = (df_demand_detail_region.EstJobChange.sum() / df_demand_detail_region.BaseYearJobEst.sum())
 pmp_fcast_job_growth_pct_region = (round(pmp_fcast_job_growth_pct_region,3))
-
 pmp_fcast_job_growth_pct_region_min = df_demand_detail_region.EstJobChangePct.min()
 pmp_fcast_job_growth_pct_region_max = df_demand_detail_region.EstJobChangePct.max()
 
@@ -133,28 +136,23 @@ pmp_fcast_job_growth_pct_state = df_demand_detail_state.EstJobChangePct.max()
 
 
 #annual report data - dynamic, based on selected accreditor
-df_annual_report_data = get_accreditor_annual_report_data(discipline_accreditor)
-
-discipline_total_accredited_programs_current = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Total_Accredited_Programs'].max()
-annual_report_avg_applicants = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Avg_Total_Applicants'].max()
-annual_report_avg_applicants_qualified = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Avg_Applicants_Qualified'].max()
-annual_report_avg_annual_admitted_students = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Avg_Applicants_Enrolled'].max()
-annual_report_total_annual_new_grads = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Total_Degrees_Conferred'].max()
+df_annual_report_data = get_accreditor_annual_report_data(discipline_abbreviation)
+annual_report_data_last_updated_year = df_annual_report_data.Year.max()
+discipline_total_accredited_programs_current = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Discipline_Total_Accredited_Programs'].max()
+annual_report_avg_applicants = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Cohort_Avg_Applicants_Overall'].max()
+annual_report_avg_applicants_qualified = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Cohort_Avg_Applicants_Qualified'].max()
+annual_report_avg_annual_admitted_students = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Cohort_Avg_Applicants_Enrolled'].max()
+annual_report_total_annual_new_grads = df_annual_report_data.Value.loc[df_annual_report_data['NormalizedLabel'] == 'Discipline_Total_Graduates'].max()
 annual_report_total_applicants = annual_report_avg_applicants * discipline_total_accredited_programs_current
 annual_report_total_applicants_qualified = annual_report_avg_applicants_qualified * discipline_total_accredited_programs_current
 annual_report_total_annual_admitted_students = annual_report_avg_annual_admitted_students * discipline_total_accredited_programs_current
 
 
-
-#!!replace with dynamic values later!!
-bls_supply_current = '258,200'
-bls_median_pay_current = '$91,010'
-
 #call supply tables from tables.pt
 df_supply = get_df_supply(discipline_accreditor)
 
 
-#-----------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------
 
 #Report (New)
 
@@ -163,10 +161,14 @@ show_section_one(professional_industry, professional_abbreviation, university_pr
 st.markdown("""---""")
 
 
+#-------------------------------------------------------------------------------------------------------------------------------
+
 #!Section 2: Projected Growth in Needed Professionals
 show_section_two(professional_abbreviation, university_program_full_name, professional_education, discipline_name_with_abbreviation, program_campus_state, program_campus_major_city, discipline_abbreviation)
 st.markdown(' ')
 
+
+#-------------------------------------------------------------------------------------------------------------------------------
 
 #!Section 3: National Outlook
 show_section_three_header()
@@ -199,30 +201,38 @@ df_region_demand_current = df_region_demand_current.rename(columns={'Program': '
 df_region_demand_outlook = df_region_demand_outlook[['Region', 'Program', 'SatisfiedDemand%']]
 df_region_demand_outlook = df_region_demand_outlook.rename(columns={'Program': 'Programs (o)', 'SatisfiedDemand%':'Satisfied Demand (o)'})
 
-##combine & rank
+##combine
 df_region_demand_combined = pd.merge(df_region_demand_current, df_region_demand_outlook, on='Region', how='left')
 df_region_demand_combined = df_region_demand_combined.sort_values(by='Satisfied Demand (o)', ascending=True).reset_index(drop=True)
-df_region_demand_combined['Rank'] = df_region_demand_combined.index+1
-df_region_demand_combined = df_region_demand_combined[['Rank', 'Region', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
-df_region_demand_combined.set_index('Rank', inplace=True)
+df_region_demand_combined = df_region_demand_combined[['Region', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
 
-#create total row & add to df
+#create total row
 df_totalrow_region = 'Total'
-df_totalrow_programsC = df_region_demand_combined['Programs (c)'].sum()
-df_totalrow_programsO = df_region_demand_combined['Programs (o)'].sum()
+df_totalrow_programsC = df_region_demand_combined['Programs (c)'].sum().astype(int)
+df_totalrow_programsO = df_region_demand_combined['Programs (o)'].sum().astype(int)
 df_totalrow_demandC = round(total_annual_new_graduates_current / df_region_demand_combined['Avg Annual New Jobs'].sum(),3)*100
 df_totalrow_demandO = round(total_annual_new_graduates_outlook / df_region_demand_combined['Avg Annual New Jobs'].sum(),3)*100
 df_totalrow_avgjobs = pmp_fcast_avg_annual_openings_discipline
 total_row = [df_totalrow_region, df_totalrow_avgjobs, df_totalrow_programsC, df_totalrow_programsO, df_totalrow_demandC, df_totalrow_demandO]
+
+#add total row to df
 df_region_demand_combined = df_region_demand_combined.append(pd.DataFrame([total_row], columns=df_region_demand_combined.columns), ignore_index=True)
+table_rows_with_index = len(list(df_region_demand_combined.Region))-1
+new_ranks = [str(x+1) for x in range(table_rows_with_index)]
+new_ranks.append("-")
+df_region_demand_combined['Rank'] = new_ranks
+df_region_demand_combined.set_index('Rank', inplace=True)
+df_region_demand_combined = df_region_demand_combined[['Region', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
 
 #clean up and write to app
-df_region_demand_combined['Satisfied Demand (c)'] = df_region_demand_combined['Satisfied Demand (c)'].astype(int)
-df_region_demand_combined['Satisfied Demand (o)'] = df_region_demand_combined['Satisfied Demand (o)'].astype(int)
+df_region_demand_combined['Satisfied Demand (c)'] = round(df_region_demand_combined['Satisfied Demand (c)'],3).astype(str) + '%'
+df_region_demand_combined['Satisfied Demand (o)'] = round(df_region_demand_combined['Satisfied Demand (o)'],3).astype(str) + '%'
 st.caption(f"*Table 1: Regional Ranking of Unmet Need for {discipline_abbreviation} Programs in the U.S.*")
 st.table(df_region_demand_combined.style.apply(highlight_selected_region, axis=1))
 st.markdown(' ')
 
+
+#-------------------------------------------------------------------------------------------------------------------------------
 
 #!Section 4: Regional & Local Outlook
 show_section_four_header()
@@ -239,38 +249,77 @@ st.write(summary_barplot_country)
 st.markdown(' ')
 
 
+#-------------------------------------------------------------------------------------------------------------------------------
+
 #!Section 5: Educational Outlook
+
+#metrics from region table
+df_region_demand_selected = df_region_demand_combined.loc[df_region_demand_combined['Region'] == program_campus_region]
+regional_avg_new_jobs = df_region_demand_selected['Avg Annual New Jobs'].max()
+regional_total_accredited_programs_current = df_region_demand_selected['Programs (c)'].max()
+regional_total_accredited_programs_outlook = df_region_demand_selected['Programs (o)'].max()
+regional_satisfied_demand_current = df_region_demand_selected['Satisfied Demand (c)'].max()
+regional_satisfied_demand_outlook = df_region_demand_selected['Satisfied Demand (o)'].max()
+regional_total_annual_new_grads = regional_total_accredited_programs_current * avg_grad_class_size
+
+#content
 show_section_five_header()
-show_section_five_body(discipline_abbreviation, annual_report_total_applicants, annual_report_total_applicants_qualified, annual_report_avg_annual_admitted_students, discipline_accreditor, discipline_total_accredited_programs_current, annual_report_total_annual_new_grads, program_campus_region, pmp_fcast_avg_annual_openings_region)
+show_section_five_body(discipline_abbreviation, annual_report_total_applicants, annual_report_total_applicants_qualified, annual_report_avg_annual_admitted_students, discipline_accreditor, regional_total_accredited_programs_current, regional_total_annual_new_grads, program_campus_region, regional_avg_new_jobs, regional_satisfied_demand_current)
 st.markdown(' ')
+
 
 #table 2: State Ranking of Unmet Need for DPT Programs in the U.S.
 #**need to move to function in separate file**
 def highlight_selected_state(s):
     return ['background-color: #b5e6cf']*len(s) if s.StateCode == program_campus_state_code else ['background-color: white']*len(s)
 
-#Table 2: summart of states within selected region
+#Table 2: summary of states within selected region
+
+#metrics
+total_annual_new_graduates_current = df_state_demand_current.Graduates.sum()
+total_annual_new_graduates_outlook = df_state_demand_outlook.Graduates.sum()
+
 ##split then combine
 df_state_demand_current_a = df_state_demand_current[['StateCode', 'AvgAnnualOpenings', 'Program', 'SatisfiedDemand']]
 df_state_demand_current_a = df_state_demand_current_a.rename(columns={'Program': 'Programs (c)', 'SatisfiedDemand':'Satisfied Demand (c)', 'AvgAnnualOpenings': 'Avg Annual New Jobs'})
-
 df_state_demand_outlook_b = df_state_demand_outlook[['StateCode', 'Program', 'SatisfiedDemand']]
 df_state_demand_outlook_b = df_state_demand_outlook_b.rename(columns={'Program': 'Programs (o)', 'SatisfiedDemand':'Satisfied Demand (o)'})
 
 ##combine
 df_state_demand_combined = pd.merge(df_state_demand_current_a, df_state_demand_outlook_b, on='StateCode', how='left')
 df_state_demand_combined = df_state_demand_combined.sort_values(by='Satisfied Demand (o)', ascending=True).reset_index(drop=True)
-df_state_demand_combined['Rank'] = df_state_demand_combined.index+1
-df_state_demand_combined = df_state_demand_combined[['Rank', 'StateCode', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
+df_state_demand_combined = df_state_demand_combined[['StateCode', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
+df_state_demand_combined['Satisfied Demand (c)'] = df_state_demand_combined['Satisfied Demand (c)'] * 100
+df_state_demand_combined['Satisfied Demand (o)'] = df_state_demand_combined['Satisfied Demand (o)'] * 100
+
+#create total row
+df_totalrow_state = 'Total'
+total_demand_in_region = df_state_demand_combined['Avg Annual New Jobs'].sum()
+df_totalrow_programsC = df_state_demand_combined['Programs (c)'].sum().astype(int)
+df_totalrow_programsO = df_state_demand_combined['Programs (o)'].sum().astype(int)
+df_totalrow_demandC = round(total_annual_new_graduates_current / total_demand_in_region,2)*100
+df_totalrow_demandO = round(total_annual_new_graduates_outlook / total_demand_in_region,2)*100
+df_totalrow_avgjobs = pmp_fcast_avg_annual_openings_region
+total_row = [df_totalrow_state, df_totalrow_avgjobs, df_totalrow_programsC, df_totalrow_programsO, df_totalrow_demandC, df_totalrow_demandO]
+
+#add total row to df
+df_state_demand_combined = df_state_demand_combined.append(pd.DataFrame([total_row], columns=df_state_demand_combined.columns), ignore_index=True)
+table_rows_with_index = len(list(df_state_demand_combined.StateCode))-1
+new_ranks = [str(x+1) for x in range(table_rows_with_index)]
+new_ranks.append("-")
+df_state_demand_combined['Rank'] = new_ranks
 df_state_demand_combined.set_index('Rank', inplace=True)
+df_state_demand_combined = df_state_demand_combined[['StateCode', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
 
-df_state_demand_combined['Satisfied Demand (c)'] = (round(df_state_demand_combined['Satisfied Demand (c)'],3)*100).astype(int)
-df_state_demand_combined['Satisfied Demand (o)'] = (round(df_state_demand_combined['Satisfied Demand (o)'],3)*100).astype(int)
-
+#clean up and write to app
+df_state_demand_combined['Satisfied Demand (c)'] = round(df_state_demand_combined['Satisfied Demand (c)'],2).astype(str) + '%'
+df_state_demand_combined['Satisfied Demand (o)'] = round(df_state_demand_combined['Satisfied Demand (o)'],2).astype(str) + '%'
 st.caption(f"*Table 2: State Ranking of Unmet Need for {discipline_abbreviation} Programs in the U.S.*")
 st.table(df_state_demand_combined.style.apply(highlight_selected_state, axis=1))
-#df_state_demand_combined.set_index('StateCode', inplace=True) --> fix later!
 st.markdown(' ')
+
+
+#-------------------------------------------------------------------------------------------------------------------------------
 
 
 #!Section 6: Population Demographics
@@ -295,7 +344,7 @@ return_references = [st.write(x) for x in reference_list if len(str(x))>20]
 st.markdown(' ')
 
 
-#-----------------------------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------------------------------------------------------
 
 
 #Testing
