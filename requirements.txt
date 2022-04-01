@@ -6,3 +6,4 @@ python-dotenv==0.19.2
 urllib3==1.25.11
 json5==0.9.5
 fpdf==1.7.2
+openpyxl==3.0.5
