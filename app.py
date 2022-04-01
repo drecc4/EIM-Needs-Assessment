@@ -9,7 +9,7 @@ from fpdf import FPDF
 import base64
 
 #local modules required
-from code.functions import *
+from code import *
 
 
 #call data tables from tables.pt
