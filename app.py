@@ -198,16 +198,6 @@ df_new_table_1['BaseYearJobEst'] = df_new_table_1['BaseYearJobEst'].astype(int)
 df_new_table_1['ProjectedYearJobEst'] = df_new_table_1['ProjectedYearJobEst'].astype(int)
 df_new_table_1['EstJobChangePct'] = df_new_table_1['EstJobChangePct'].astype(int).astype(str) + '%'
 
-# Inject CSS with Markdown
-hide_table_row_index = """
-            <style>
-            tbody th {display:none}
-            .blank {display:none}
-            </style>
-            """
-
-
-st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 st.markdown(' ')
 st.table(df_new_table_1.style.apply(highlight_selected_state, axis=1))
