@@ -72,7 +72,7 @@ professional_abbreviation, pmp_fcast_total_jobs_base_year_state, professional_ti
 pmp_fcast_job_growth_pct_state):
 
     #string formatting for dollars and thousands separator
-    pmp_fcast_total_jobs_base_year_state_str = "{:,}".format(pmp_fcast_total_jobs_base_year_state)
+    pmp_fcast_total_jobs_base_year_state_str = "{:}".format(pmp_fcast_total_jobs_base_year_state)
     pmp_fcast_total_jobs_projected_year_state_str = "{:,}".format(pmp_fcast_total_jobs_projected_year_state)
     pmp_fcast_job_growth_pct_region_str = "{:.1%}".format(pmp_fcast_job_growth_pct_region)
     pmp_fcast_job_growth_pct_discipline_str = "{:.1%}".format(pmp_fcast_job_growth_pct_discipline)
@@ -150,7 +150,7 @@ def show_section_five_body_a(discipline_accreditor, discipline_abbreviation, dis
     section_body = st.write(
         f'''
         The Commission on Accreditation in Physical Therapy Education ({discipline_accreditor}) reports there are currently 
-        {discipline_total_accredited_programs_current} accredited and *25* developing {discipline_abbreviation} programs nationally. 
+        {discipline_total_accredited_programs_current} accredited and **25** developing {discipline_abbreviation} programs nationally. 
         Figure 1 illustrates the distribution of these programs across the country.
         '''
         )
@@ -164,9 +164,9 @@ def show_section_five_body_b(discipline_abbreviation, program_campus_region, pro
     
     section_body = st.write(
         f'''
-        Based on the current number of accredited {discipline_abbreviation} programs, only *71.6%* and *59.7%* of the employment demand 
+        Based on the current number of accredited {discipline_abbreviation} programs, only **71.6%** and **59.7%** of the employment demand 
         is currently being satisfied annually in the {program_campus_region}ern U.S. and nationally, respectively (Table 2). Even accounting for 
-        developing {discipline_abbreviation} programs that will launch over the next several years, only *77.1%* and *65.7%* of the 
+        developing {discipline_abbreviation} programs that will launch over the next several years, only **77.1%** and **65.7%** of the 
         employment demand will be satisfied annually in the {program_campus_region}ern U.S. and nationally, respectively. 
         This demonstrates a clear need for significantly more {professional_abbreviation} graduates each year to meet both current and future employment demand. 
         '''
@@ -198,10 +198,10 @@ regional_satisfied_demand_current, regional_satisfied_demand_outlook):
         in the {program_campus_region}ern U.S., when there is a projected need of {regional_avg_new_jobs_str} professionals in this region 
         annually (Table 3 and Figure 2).
 
-        Based on the current number of accredited {discipline_abbreviation} programs, only *state_satisfied_demand_current* and {regional_satisfied_demand_current}
+        Based on the current number of accredited {discipline_abbreviation} programs, only **state_satisfied_demand_current** and {regional_satisfied_demand_current}
         of the employment demand is currently being satisfied annually in {program_campus_state} and the {program_campus_region}ern U.S., respectively (Table 2).
-        Even accounting for developing {discipline_abbreviation} programs that will launch over the next several years, only *state_satisfied_demand_outlook* and
-        *{regional_satisfied_demand_outlook}* of the employment demand will be satisfied annually in {program_campus_state} and the {program_campus_region}ern U.S., 
+        Even accounting for developing {discipline_abbreviation} programs that will launch over the next several years, only **state_satisfied_demand_outlook** and
+        {regional_satisfied_demand_outlook} of the employment demand will be satisfied annually in {program_campus_state} and the {program_campus_region}ern U.S., 
         respectively. This demonstrates a clear need for significantly more {professional_abbreviation} graduates each year to meet both the current and future
         employment demand (Table 3 and Figure 2).
         '''
