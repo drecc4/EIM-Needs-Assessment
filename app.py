@@ -102,7 +102,7 @@ bls_median_pay_current = df_lookup_discipline.BLSMedianPay2020.max()
 bls_median_job_growth_10yr_fcast = df_lookup_discipline.BLS10YrJobOutlook2020.max()
 
 #demand drivers
-df_demand_detail_period = df_demand_detail.loc[df_demand_detail['Forecast'] == 'LT']
+df_demand_detail_period = df_demand_detail.loc[df_demand_detail['Forecast'] == 'ST']
 pmp_fcast_year_start = df_demand_detail_period.BaseYear.max()
 pmp_fcast_year_end = df_demand_detail_period.ProjectedYear.max()
 
@@ -217,10 +217,6 @@ st.markdown(' ')
 st.markdown(' ')
 
 
-
-
-
-
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #!Section 5: Educational Outlook
@@ -282,6 +278,7 @@ st.markdown(' ')
 df_state_demand_current = table_state_demand(df_supply, df_demand_detail_region, professional_abbreviation, program_campus_region, ['Accredited'], avg_grad_class_size)
 df_state_demand_outlook = table_state_demand(df_supply, df_demand_detail_region, professional_abbreviation, program_campus_region, ['Accredited', 'Developing'], avg_grad_class_size)
 df_state_demand_combined = report_output_table_3(df_state_demand_current, df_state_demand_outlook, pmp_fcast_avg_annual_openings_state)
+
 
 #Table 3: summary of states within selected region
 def highlight_selected_state(s):
