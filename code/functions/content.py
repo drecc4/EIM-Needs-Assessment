@@ -19,8 +19,8 @@ discipline_name_with_abbreviation, program_campus_state, program_campus_major_ci
         f'''
         {university_program_full_name} is proposing to increase access to {professional_education} education on a 
         national scale by developing a hybrid {discipline_name_with_abbreviation} Program at its 
-        {program_campus_state} campus in the {program_campus_major_city} area. {program_campus_major_city} *is centrally located 
-        with an international airport and direct flight access from most cities around the country*, making it an ideal location 
+        {program_campus_state} campus in the {program_campus_major_city} area. {program_campus_major_city} is easily accessible 
+        by multiple means of transportation from most cities around the country making it an ideal location 
         for a hybrid program that will recruit students from both a regional and a national applicant pool. A thorough study 
         of the national, regional, and local need for a {discipline_abbreviation} program as been performed.
         ''')
@@ -79,7 +79,7 @@ pmp_fcast_job_growth_pct_state):
 
     #conditional statements
     section_body_exceeds = (f'''
-        Projections Central indicates that {program_campus_state} and other {program_campus_region}ern states 
+        Projections Central indicates that {program_campus_state} and other states in the {program_campus_region}ern U.S. 
         are projected to experience a {pmp_fcast_job_growth_pct_region_str}  increase in growth from {pmp_fcast_year_start} 
         to {pmp_fcast_year_end} (between {pmp_fcast_job_growth_pct_region_min}% to {pmp_fcast_job_growth_pct_region_max}%), 
         which significantly exceeds the national growth rate of {pmp_fcast_job_growth_pct_discipline_str}. Employment prospects 
@@ -143,10 +143,42 @@ def show_section_five_header():
     section_title = st.subheader(f'**Educational Outlook**')
     return(section_title)
 
-#body
-def show_section_five_body(discipline_abbreviation, annual_report_total_applicants, annual_report_total_applicants_qualified, 
+#body - two parts
+
+def show_section_five_body_a(discipline_accreditor, discipline_abbreviation, discipline_total_accredited_programs_current):
+    
+    section_body = st.write(
+        f'''
+        The Commission on Accreditation in Physical Therapy Education ({discipline_accreditor}) reports there are currently 
+        {discipline_total_accredited_programs_current} accredited and *25* developing {discipline_abbreviation} programs nationally. 
+        Figure 1 illustrates the distribution of these programs across the country.
+        '''
+        )
+
+    return(section_body)
+
+
+def show_section_five_body_b(discipline_abbreviation, program_campus_region, professional_abbreviation):
+
+    #string formatting for dollars and thousands separator
+    
+    section_body = st.write(
+        f'''
+        Based on the current number of accredited {discipline_abbreviation} programs, only *71.6%* and *59.7%* of the employment demand 
+        is currently being satisfied annually in the {program_campus_region}ern U.S. and nationally, respectively (Table 2). Even accounting for 
+        developing {discipline_abbreviation} programs that will launch over the next several years, only *77.1%* and *65.7%* of the 
+        employment demand will be satisfied annually in the {program_campus_region}ern U.S. and nationally, respectively. 
+        This demonstrates a clear need for significantly more {professional_abbreviation} graduates each year to meet both current and future employment demand. 
+        '''
+        )
+
+    return(section_body)
+
+
+def show_section_five_body_c(discipline_abbreviation, annual_report_total_applicants, annual_report_total_applicants_qualified, 
 annual_report_avg_annual_admitted_students, discipline_accreditor, regional_total_accredited_programs_current, regional_total_annual_new_grads,
-program_campus_region, regional_avg_new_jobs, regional_satisfied_demand_current):
+program_campus_region, regional_avg_new_jobs, program_campus_state, professional_abbreviation, 
+regional_satisfied_demand_current, regional_satisfied_demand_outlook):
 
     #string formatting for dollars and thousands separator
     regional_avg_new_jobs_str = "{:,}".format(regional_avg_new_jobs)
@@ -158,12 +190,20 @@ program_campus_region, regional_avg_new_jobs, regional_satisfied_demand_current)
     section_body = st.write(
         f'''
         Despite the expansion in the number of {discipline_abbreviation} programs nationally, programs have been unable to keep pace with employment 
-        demand and student interest with {annual_report_total_applicants_str} ({annual_report_total_applicants_qualified_str} qualified applicants) applicants vying 
-        for {annual_report_avg_annual_admitted_students} placements in the average {discipline_abbreviation} program. {discipline_accreditor}'s website 
-        shows there are currently {regional_total_accredited_programs_current_str} accredited {discipline_abbreviation} programs in the {program_campus_region} region. As shown in Table 2, 
-        there are currently only {regional_total_annual_new_grads_str} seats available for DPT students in the {program_campus_region}ern U.S., when there is a projected 
-        need of {regional_avg_new_jobs_str} professionals in this region annually. (Table 2). Therefore, less than {regional_satisfied_demand_current} regionally satisfied demand 
-        of the projected employment demand is being satisfied by the current level of {discipline_abbreviation} program capacity.
+        demand and student interest with {annual_report_total_applicants_str} ({annual_report_total_applicants_qualified_str} qualified applicants) 
+        applicants vying for {annual_report_avg_annual_admitted_students} placements in the average {discipline_abbreviation} program. 
+        
+        {discipline_accreditor} reports there are currently {regional_total_accredited_programs_current_str} accredited {discipline_abbreviation} programs 
+        in the {program_campus_region}ern U.S. (Table 2). There are currently only {regional_total_annual_new_grads_str} seats available for DPT students 
+        in the {program_campus_region}ern U.S., when there is a projected need of {regional_avg_new_jobs_str} professionals in this region 
+        annually (Table 3 and Figure 2).
+
+        Based on the current number of accredited {discipline_abbreviation} programs, only *state_satisfied_demand_current* and {regional_satisfied_demand_current}
+        of the employment demand is currently being satisfied annually in {program_campus_state} and the {program_campus_region}ern U.S., respectively (Table 2).
+        Even accounting for developing {discipline_abbreviation} programs that will launch over the next several years, only *state_satisfied_demand_outlook* and
+        *{regional_satisfied_demand_outlook}* of the employment demand will be satisfied annually in {program_campus_state} and the {program_campus_region}ern U.S., 
+        respectively. This demonstrates a clear need for significantly more {professional_abbreviation} graduates each year to meet both the current and future
+        employment demand (Table 3 and Figure 2).
         '''
         )
 
