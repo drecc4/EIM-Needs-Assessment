@@ -9,6 +9,7 @@ from fpdf import FPDF
 import base64
 
 #local modules required
+#from code.functions import *
 from code.functions.content import *
 from code.functions.tables import *
 from code.functions.plots import *
@@ -198,6 +199,16 @@ df_new_table_1['BaseYearJobEst'] = df_new_table_1['BaseYearJobEst'].astype(int)
 df_new_table_1['ProjectedYearJobEst'] = df_new_table_1['ProjectedYearJobEst'].astype(int)
 df_new_table_1['EstJobChangePct'] = df_new_table_1['EstJobChangePct'].astype(int).astype(str) + '%'
 
+# Inject CSS with Markdown
+hide_table_row_index = """
+            <style>
+            tbody th {display:none}
+            .blank {display:none}
+            </style>
+            """
+
+
+st.markdown(hide_table_row_index, unsafe_allow_html=True)
 
 st.markdown(' ')
 st.table(df_new_table_1.style.apply(highlight_selected_state, axis=1))
@@ -207,74 +218,17 @@ st.markdown(' ')
 
 
 
-#Plot 1: US Scatter Map of All Program Locations
-summary_table_country = table_state_demand(df_supply, df_demand,professional_abbreviation, 'All', ['Accredited', 'Developing'], avg_grad_class_size)
-summary_plot_country = plot_programs_on_scatter_map(df_supply, summary_table_country, 'Outlook')
-st.markdown(' ')
-st.write(summary_plot_country)
-st.caption(f"*Figure 1: Currently Accredited + Developing {discipline_abbreviation} Programs*")
-st.markdown(' ')
-st.markdown(' ')
+
 
 
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#Table 2
-#**need to move to function in separate file**
-
-def highlight_selected_region(s):
-    return ['background-color: #b5e6cf']*len(s) if s.Region == program_campus_region else ['background-color: white']*len(s)
-
-##regional table summary
-df_region_demand_current = table_regional_demand(df_supply, df_demand, professional_abbreviation, ['Accredited'], avg_grad_class_size)
-
-df_region_demand_outlook = table_regional_demand(df_supply, df_demand, professional_abbreviation, ['Accredited', 'Developing'], avg_grad_class_size)
-total_annual_new_graduates_current = df_region_demand_current.Graduates.sum()
-total_annual_new_graduates_outlook = df_region_demand_outlook.Graduates.sum()
-
-##split then combine
-df_region_demand_current = df_region_demand_current[['Region', 'AvgAnnualOpenings', 'Program', 'SatisfiedDemand%']]
-df_region_demand_current = df_region_demand_current.rename(columns={'Program': 'Programs (c)', 'SatisfiedDemand%':'Satisfied Demand (c)', 'AvgAnnualOpenings': 'Avg Annual New Jobs'})
-df_region_demand_outlook = df_region_demand_outlook[['Region', 'Program', 'SatisfiedDemand%']]
-df_region_demand_outlook = df_region_demand_outlook.rename(columns={'Program': 'Programs (o)', 'SatisfiedDemand%':'Satisfied Demand (o)'})
-
-##combine
-df_region_demand_combined = pd.merge(df_region_demand_current, df_region_demand_outlook, on='Region', how='left')
-df_region_demand_combined = df_region_demand_combined.sort_values(by='Satisfied Demand (o)', ascending=True).reset_index(drop=True)
-df_region_demand_combined = df_region_demand_combined[['Region', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
-
-#create total row
-df_totalrow_region = 'Total'
-df_totalrow_programsC = df_region_demand_combined['Programs (c)'].sum().astype(int)
-df_totalrow_programsO = df_region_demand_combined['Programs (o)'].sum().astype(int)
-df_totalrow_demandC = round(total_annual_new_graduates_current / df_region_demand_combined['Avg Annual New Jobs'].sum(),3)*100
-df_totalrow_demandO = round(total_annual_new_graduates_outlook / df_region_demand_combined['Avg Annual New Jobs'].sum(),3)*100
-df_totalrow_avgjobs = pmp_fcast_avg_annual_openings_discipline
-total_row = [df_totalrow_region, df_totalrow_avgjobs, df_totalrow_programsC, df_totalrow_programsO, df_totalrow_demandC, df_totalrow_demandO]
-
-#add total row to df
-df_region_demand_combined = df_region_demand_combined.append(pd.DataFrame([total_row], columns=df_region_demand_combined.columns), ignore_index=True)
-table_rows_with_index = len(list(df_region_demand_combined.Region))-1
-new_ranks = [str(x+1) for x in range(table_rows_with_index)]
-new_ranks.append("-")
-df_region_demand_combined['Rank'] = new_ranks
-df_region_demand_combined.set_index('Rank', inplace=True)
-df_region_demand_combined = df_region_demand_combined[['Region', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
-
-#clean up and write to app
-df_region_demand_combined['Avg Annual New Jobs'] = df_region_demand_combined['Avg Annual New Jobs'].astype(int)
-df_region_demand_combined['Satisfied Demand (c)'] = round(df_region_demand_combined['Satisfied Demand (c)'],3).astype(int).astype(str) + '%'
-df_region_demand_combined['Satisfied Demand (o)'] = round(df_region_demand_combined['Satisfied Demand (o)'],3).astype(int).astype(str) + '%'
-st.table(df_region_demand_combined.style.apply(highlight_selected_region, axis=1))
-st.caption(f"*Table 2: Unmet Need for {discipline_abbreviation} Programs in the U.S. by Region (c:current, o:outlook)*")
-st.markdown(' ')
-
-
-
-#-------------------------------------------------------------------------------------------------------------------------------
-
-
 #!Section 5: Educational Outlook
+
+#region tables
+df_region_demand_current = table_regional_demand(df_supply, df_demand, professional_abbreviation, ['Accredited'], avg_grad_class_size)
+df_region_demand_outlook = table_regional_demand(df_supply, df_demand, professional_abbreviation, ['Accredited', 'Developing'], avg_grad_class_size)
+df_region_demand_combined = report_output_table_2(df_region_demand_current, df_region_demand_outlook, pmp_fcast_avg_annual_openings_discipline)
 
 #metrics from region table
 df_region_demand_selected = df_region_demand_combined.loc[df_region_demand_combined['Region'] == program_campus_region]
@@ -286,72 +240,63 @@ regional_satisfied_demand_current = df_region_demand_selected['Satisfied Demand 
 regional_satisfied_demand_outlook = df_region_demand_selected['Satisfied Demand (o)'].max()
 regional_total_annual_new_grads = regional_total_accredited_programs_current * avg_grad_class_size
 
-#content
+#Section Five, Part 1 of 3
 show_section_five_header()
-show_section_five_body(discipline_abbreviation, annual_report_total_applicants, annual_report_total_applicants_qualified, annual_report_avg_annual_admitted_students, discipline_accreditor, regional_total_accredited_programs_current, regional_total_annual_new_grads, program_campus_region, regional_avg_new_jobs, regional_satisfied_demand_current)
+show_section_five_body_a(discipline_accreditor, discipline_abbreviation, discipline_total_accredited_programs_current)
+st.markdown(' ')
+
+#Plot 1: US Scatter Map of All Program Locations
+summary_table_country = table_state_demand(df_supply, df_demand,professional_abbreviation, 'All', ['Accredited', 'Developing'], avg_grad_class_size)
+summary_plot_country = plot_programs_on_scatter_map(df_supply, summary_table_country, 'Outlook')
+st.markdown(' ')
+st.write(summary_plot_country)
+st.caption(f"*Figure 1: Currently Accredited + Developing {discipline_abbreviation} Programs*")
+st.markdown(' ')
 st.markdown(' ')
 
 
+#Section Five, Part 2 of 3
 
-#Table 2: summary of states within selected region
+show_section_five_body_b(discipline_abbreviation, program_campus_region, professional_abbreviation)
+st.markdown(' ')
 
+#Table 2
+def highlight_selected_region(s):
+    return ['background-color: #b5e6cf']*len(s) if s.Region == program_campus_region else ['background-color: white']*len(s)
+
+st.table(df_region_demand_combined.style.apply(highlight_selected_region, axis=1))
+st.caption(f"*Table 2: Unmet Need for {discipline_abbreviation} Programs in the U.S. by Region (c: current, o: outlook)*")
+st.markdown(' ')
+
+
+#Section Five, Part 3 of 3
+
+#Body
+show_section_five_body_c(discipline_abbreviation, annual_report_total_applicants, annual_report_total_applicants_qualified, 
+annual_report_avg_annual_admitted_students, discipline_accreditor, regional_total_accredited_programs_current, regional_total_annual_new_grads,
+program_campus_region, regional_avg_new_jobs, program_campus_state, professional_abbreviation, 
+regional_satisfied_demand_current, regional_satisfied_demand_outlook)
+st.markdown(' ')
+
+#state tables
+df_state_demand_current = table_state_demand(df_supply, df_demand_detail_region, professional_abbreviation, program_campus_region, ['Accredited'], avg_grad_class_size)
+df_state_demand_outlook = table_state_demand(df_supply, df_demand_detail_region, professional_abbreviation, program_campus_region, ['Accredited', 'Developing'], avg_grad_class_size)
+df_state_demand_combined = report_output_table_3(df_state_demand_current, df_state_demand_outlook, pmp_fcast_avg_annual_openings_state)
+
+#Table 3: summary of states within selected region
 def highlight_selected_state(s):
     return ['background-color: #b5e6cf']*len(s) if s.StateCode == program_campus_state_code else ['background-color: white']*len(s)
 
-#tables
-df_state_demand_current = table_state_demand(df_supply, df_demand_detail_region, professional_abbreviation, program_campus_region, ['Accredited'], avg_grad_class_size)
-df_state_demand_outlook = table_state_demand(df_supply, df_demand_detail_region, professional_abbreviation, program_campus_region, ['Accredited', 'Developing'], avg_grad_class_size)
-
-#metrics
-total_annual_new_graduates_current = df_state_demand_current.Graduates.sum()
-total_annual_new_graduates_outlook = df_state_demand_outlook.Graduates.sum()
-
-##split then combine
-df_state_demand_current_a = df_state_demand_current[['StateCode', 'AvgAnnualOpenings', 'Program', 'SatisfiedDemand']]
-df_state_demand_current_a = df_state_demand_current_a.rename(columns={'Program': 'Programs (c)', 'SatisfiedDemand':'Satisfied Demand (c)', 'AvgAnnualOpenings': 'Avg Annual New Jobs'})
-df_state_demand_outlook_b = df_state_demand_outlook[['StateCode', 'Program', 'SatisfiedDemand']]
-df_state_demand_outlook_b = df_state_demand_outlook_b.rename(columns={'Program': 'Programs (o)', 'SatisfiedDemand':'Satisfied Demand (o)'})
-
-##combine
-df_state_demand_combined = pd.merge(df_state_demand_current_a, df_state_demand_outlook_b, on='StateCode', how='left')
-df_state_demand_combined = df_state_demand_combined.sort_values(by='Satisfied Demand (o)', ascending=True).reset_index(drop=True)
-df_state_demand_combined = df_state_demand_combined[['StateCode', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
-df_state_demand_combined['Satisfied Demand (c)'] = df_state_demand_combined['Satisfied Demand (c)'] * 100
-df_state_demand_combined['Satisfied Demand (o)'] = df_state_demand_combined['Satisfied Demand (o)'] * 100
-
-#create total row
-df_totalrow_state = 'Total'
-total_demand_in_region = df_state_demand_combined['Avg Annual New Jobs'].sum().astype(int)
-df_totalrow_programsC = df_state_demand_combined['Programs (c)'].sum().astype(int)
-df_totalrow_programsO = df_state_demand_combined['Programs (o)'].sum().astype(int)
-df_totalrow_demandC = round(total_annual_new_graduates_current / total_demand_in_region,2)*100
-df_totalrow_demandO = round(total_annual_new_graduates_outlook / total_demand_in_region,2)*100
-df_totalrow_avgjobs = pmp_fcast_avg_annual_openings_region
-total_row = [df_totalrow_state, df_totalrow_avgjobs, df_totalrow_programsC, df_totalrow_programsO, df_totalrow_demandC, df_totalrow_demandO]
-
-#add total row to df
-df_state_demand_combined = df_state_demand_combined.append(pd.DataFrame([total_row], columns=df_state_demand_combined.columns), ignore_index=True)
-table_rows_with_index = len(list(df_state_demand_combined.StateCode))-1
-new_ranks = [str(x+1) for x in range(table_rows_with_index)]
-new_ranks.append("-")
-df_state_demand_combined['Rank'] = new_ranks
-df_state_demand_combined.set_index('Rank', inplace=True)
-df_state_demand_combined = df_state_demand_combined[['StateCode', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
-
-#clean up and write to app
-df_state_demand_combined['Satisfied Demand (c)'] = round(df_state_demand_combined['Satisfied Demand (c)'],2).astype(int).astype(str) + '%'
-df_state_demand_combined['Satisfied Demand (o)'] = round(df_state_demand_combined['Satisfied Demand (o)'],2).astype(int).astype(str) + '%'
-df_state_demand_combined['Avg Annual New Jobs'] = df_state_demand_combined['Avg Annual New Jobs'].astype(int)
 st.table(df_state_demand_combined.style.apply(highlight_selected_state, axis=1))
-st.caption(f"*Table 2: State Ranking of Unmet Need for {discipline_abbreviation} Programs in the U.S.*")
+st.caption(f"*Table 3: State Ranking of Unmet Need for {discipline_abbreviation} Programs in the {program_campus_region}ern U.S. (c: current, o:outlook)*")
 st.markdown(' ')
 
 
-#plot 2: bar plot for selected region, by state
+#Plot 2: bar plot for selected region, by state
 summary_barplot_country = plot_states_in_region(df_state_demand_current, df_state_demand_outlook)
 st.markdown(' ')
 st.write(summary_barplot_country)
-st.caption(f"*Plot 2: Satisfied Demand for {discipline_abbreviation} Programs in the {program_campus_region}ern U.S.*")
+st.caption(f"*Figure 2: Satisfied Demand for {discipline_abbreviation} Programs in the {program_campus_region}ern U.S.*")
 st.markdown(' ')
 
 
