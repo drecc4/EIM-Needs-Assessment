@@ -67,7 +67,7 @@ def table_regional_demand(df_supply, df_demand, discipline, status_list, avg_gra
 
     #step 2: prepare demand table
     df_step_demand = df_demand.loc[df_demand['Discipline'] == discipline]
-    df_step_demand = df_step_demand.groupby(['Region'])[['AvgAnnualOpenings_ST']].sum().reset_index()
+    df_step_demand = df_step_demand.groupby(['Region'])[[f'AvgAnnualOpenings_ST']].sum().reset_index()
     df_step_demand = df_step_demand.rename(columns={'AvgAnnualOpenings_ST': 'AvgAnnualOpenings'})
 
     #step 3: combine and aggregate (for "outlook")
@@ -180,7 +180,7 @@ def report_output_table_2(df_region_demand_current, df_region_demand_outlook, av
     df_region_demand_combined = df_region_demand_combined[['Region', 'Avg Annual New Jobs', 'Programs (c)', 'Programs (o)', 'Satisfied Demand (c)', 'Satisfied Demand (o)']]
 
     #clean up and write to app
-    df_region_demand_combined['Avg Annual New Jobs'] = df_region_demand_combined['Avg Annual New Jobs'].astype(int)
+    df_region_demand_combined['Avg Annual New Jobs'] = df_region_demand_combined['Avg Annual New Jobs'].fillna(0).astype(int)
     df_region_demand_combined['Satisfied Demand (c)'] = round(df_region_demand_combined['Satisfied Demand (c)'],3).astype(int).astype(str) + '%'
     df_region_demand_combined['Satisfied Demand (o)'] = round(df_region_demand_combined['Satisfied Demand (o)'],3).astype(int).astype(str) + '%'
 
