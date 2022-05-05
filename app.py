@@ -7,7 +7,7 @@ from PIL import Image
 
 pages = {
     "Report": report,
-    "Source Data": data
+    #"Source Data": data
 }
 
 #-------------------------------------------------------------------------------------------
