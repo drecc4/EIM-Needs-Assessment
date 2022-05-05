@@ -74,13 +74,8 @@ def app():
     #-------------------------------------------------------------------------------------------------------------------------------
 
     #call demand data
-    df_demand = get_df_demand()
-    df_demand = df_demand.loc[df_demand['ForecastRange'] == fcast_range]
-    df_demand = df_demand.loc[df_demand['StateCode'] != 'USA']
-
-    df_demand_detail = get_df_demand_detail()
-    df_demand_detail = df_demand_detail.loc[df_demand_detail['Forecast'] == fcast_range]
-    df_demand_detail = df_demand_detail.loc[df_demand_detail['StateCode'] != 'USA']
+    df_demand = get_df_demand(fcast_range)
+    df_demand_detail = get_df_demand_detail(fcast_range)
 
 
     #-------------------------------------------------------------------------------------------------------------------------------

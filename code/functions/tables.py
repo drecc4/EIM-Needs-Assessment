@@ -33,19 +33,23 @@ def get_df_reference_disciplines():
 
 #load df_demand
 @st.cache
-def get_df_demand():
+def get_df_demand(fcast_range):
     file_path = f'./data/02-Processed/MarketDemand'
     last_updated_file = os.listdir(file_path)[-1]
     df_demand = pd.read_excel(f'{file_path}/{last_updated_file}')
+    df_demand = df_demand.loc[df_demand['ForecastRange'] == fcast_range]
+    df_demand = df_demand.loc[df_demand['StateCode'] != 'USA']
     return(df_demand)
 
 
 #load df_demand_detail
 @st.cache
-def get_df_demand_detail():
+def get_df_demand_detail(fcast_range):
     file_path = f'./data/02-Processed/PMPCombinedFcastDetail'
     last_updated_file = os.listdir(file_path)[-1]
     df_demand = pd.read_excel(f'{file_path}/{last_updated_file}')
+    df_demand = df_demand.loc[df_demand['Forecast'] == fcast_range]
+    df_demand = df_demand.loc[df_demand['StateCode'] != 'USA']
     return(df_demand)
 
 
