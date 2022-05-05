@@ -30,15 +30,6 @@ def get_df_reference_disciplines():
     df_reference = pd.read_excel(f'{file_path}/{file_name}')
     return(df_reference)
 
-#load df_supply
-@st.cache
-def get_df_supply(accreditor):
-    file_path = f'./data/02-Processed/ProgramDirectoryNormalizedAndFiltered'
-    last_updated_file = os.listdir(file_path)[-1][0:7]
-    file_name = f'{last_updated_file} - {accreditor} Normalized Program Directory.xlsx'
-    df_supply = pd.read_excel(f'{file_path}/{file_name}')
-    return(df_supply)
-
 
 #load df_demand
 @st.cache
@@ -67,8 +58,7 @@ def table_regional_demand(df_supply, df_demand, discipline, status_list, avg_gra
 
     #step 2: prepare demand table
     df_step_demand = df_demand.loc[df_demand['Discipline'] == discipline]
-    df_step_demand = df_step_demand.groupby(['Region'])[[f'AvgAnnualOpenings_ST']].sum().reset_index()
-    df_step_demand = df_step_demand.rename(columns={'AvgAnnualOpenings_ST': 'AvgAnnualOpenings'})
+    df_step_demand = df_step_demand.groupby(['Region'])[[f'AvgAnnualOpenings']].sum().reset_index()
 
     #step 3: combine and aggregate (for "outlook")
     df_final = pd.merge(df_step_supply, df_step_demand, on='Region', how='right')
@@ -233,3 +223,72 @@ def report_output_table_3(df_state_demand_current, df_state_demand_outlook, avg_
 
     return(df_state_demand_combined)
 
+
+
+#New Tables Below ----------------------------------------------------------
+
+def table_market_demand_detail_entire_country(df_demand, forecast_range, professional_abbreviation):
+    df_temp = df_demand.loc[df_demand['ForecastRange'] == forecast_range]
+    df_temp = df_temp.loc[df_temp['Discipline'] == professional_abbreviation]
+    df_temp = df_temp.loc[df_temp['Region'] != 'USA']
+    return(df_temp)
+
+def table_market_demand_detail_states_within_selected_region(df_demand, forecast_range, professional_abbreviation, region):
+    df_temp = df_demand.loc[df_demand['ForecastRange'] == forecast_range]
+    df_temp = df_temp.loc[df_temp['Discipline'] == professional_abbreviation]
+    df_temp = df_temp.loc[df_temp['Region'] == region]
+    return(df_temp)
+
+def table_market_demand_detail_region_agg(df_demand):
+    agg_cols = {'BaseYearJobEst': 'sum', 'ProjectedYearJobEst': 'sum', 'EstJobChange': 'sum', 'AvgAnnualOpenings': 'sum'}
+    df_temp = df_demand.groupby(['Region',]).agg(agg_cols).reset_index()
+    return(df_temp)
+
+@st.cache
+def get_df_supply(accreditor):
+    file_path = f'./data/02-Processed/ProgramDirectoryNormalizedAndFiltered'
+    last_updated_file = os.listdir(file_path)[-1][0:7]
+    file_name = f'{last_updated_file} - {accreditor} Normalized Program Directory.xlsx'
+    df_supply = pd.read_excel(f'{file_path}/{file_name}')
+    return(df_supply)
+
+def table_market_supply_region_agg(df_supply, avg_grad_class_size, accreditation_status):
+    df_temp = df_supply.loc[df_supply['StatusNorm'].isin(accreditation_status)]
+    df_temp = df_temp.groupby(['Region', 'StatusNorm'])[['Program']].nunique().reset_index()
+    df_temp = df_temp.pivot(index='Region', columns='StatusNorm', values='Program').fillna(0).astype(int).reset_index()
+    df_temp['Program Outlook'] = df_temp['Accredited'] + df_temp['Developing']
+    df_temp['Graduate Outlook'] = df_temp['Program Outlook'] * avg_grad_class_size
+    return(df_temp)
+
+def table_market_supply_state_agg(df_supply, avg_grad_class_size, accreditation_status):
+    df_temp = df_supply.loc[df_supply['StatusNorm'].isin(accreditation_status)]
+    df_temp = df_temp.groupby(['State', 'StatusNorm'])[['Program']].nunique().reset_index()
+    df_temp = df_temp.pivot(index='State', columns='StatusNorm', values='Program').fillna(0).astype(int).reset_index()
+    df_temp['Program Outlook'] = df_temp['Accredited'] + df_temp['Developing']
+    df_temp['Graduate Outlook'] = df_temp['Program Outlook'] * avg_grad_class_size
+    return(df_temp)
+
+def table_projected_demand_by_region(df_demand, pmp_base_year, pmp_forecast_year):
+    df_table = df_demand.rename(columns={
+        'BaseYearJobEst': f'{pmp_base_year} Job Estimate', 'ProjectedYearJobEst': f'{pmp_forecast_year} Job Forecast', 
+        'EstJobChange': 'Total Job Growth', 'AvgAnnualOpenings': 'Avg Annual Job Growth'})
+    df_table = df_table.sort_values(by='Avg Annual Job Growth', ascending=False)
+    return(df_table)
+
+def table_unsatisfied_demand_by_region(df_demand, df_supply):
+    df_table = pd.merge(df_demand, df_supply, on='Region', how='left')
+    df_table = df_table[['Region', 'Accredited', 'Developing', 'Program Outlook', 'Graduate Outlook', 'AvgAnnualOpenings']]
+    df_table = df_table.rename(columns={'AvgAnnualOpenings': 'Avg Annual New Jobs'})
+    df_table['Unsatisfied Demand'] = df_table['Avg Annual New Jobs'] - df_table['Graduate Outlook']
+    df_table['Unsatisfied Demand %'] = round(df_table['Unsatisfied Demand'] / df_table['Avg Annual New Jobs'],3)
+    df_table = df_table.sort_values(by='Unsatisfied Demand %', ascending=False)
+    return(df_table)
+
+def table_unsatisfied_demand_by_state_within_selected_region(df_demand, df_supply):
+    df_table = pd.merge(df_demand, df_supply, on='State', how='left')
+    df_table = df_table[['State', 'Accredited', 'Developing', 'Program Outlook', 'Graduate Outlook', 'AvgAnnualOpenings']]
+    df_table = df_table.rename(columns={'AvgAnnualOpenings': 'Avg Annual New Jobs'})
+    df_table['Unsatisfied Demand'] = df_table['Avg Annual New Jobs'] - df_table['Graduate Outlook']
+    df_table['Unsatisfied Demand %'] = round(df_table['Unsatisfied Demand'] / df_table['Avg Annual New Jobs'],3)
+    df_table = df_table.sort_values(by='Unsatisfied Demand %', ascending=False)
+    return(df_table)
